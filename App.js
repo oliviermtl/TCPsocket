@@ -1,17 +1,8 @@
 import React from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  Button,
-  SafeAreaView,
-} from 'react-native';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
 
 import TcpSocket from 'react-native-tcp-socket';
-import {NetworkInfo} from 'react-native-network-info';
-
-// Get Local IP
+const connectedSockets = [];
 
 class App extends React.Component {
   constructor(props) {
@@ -28,83 +19,112 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    const serverPort = 9802;
-    const serverHost = '192.168.2.107';
-    let myIP = '';
+    const serverPort = Number(9 + (Math.random() * 999).toFixed(0));
+    const serverHost = '0.0.0.0';
     let server;
     let client;
-
-    // Get IPv4 IP (priority: WiFi first, cellular second)
-    NetworkInfo.getIPV4Address().then((ipv4Address) => {
-      myIP = ipv4Address;
-      console.log(myIP);
-
-      this.updateChatter('ipv4Address ' + ipv4Address);
-      server = TcpSocket.createServer((socket) => {
-        this.updateChatter(
-          'server connected on ' + JSON.stringify(socket.address()),
-        );
-
-        socket.on('data', (data) => {
-          this.updateChatter('Server Received: ' + data);
-          socket.write('Echo server\r\n' + data);
-        });
-
-        socket.on('error', (error) => {
-          this.updateChatter('server client error ' + error);
-        });
-
-        socket.on('close', (error) => {
-          this.updateChatter('server client closed ' + (error ? error : ''));
-        });
-      }).listen(
-        {port: serverPort, host: serverHost, reuseAddress: true},
-        (address) => {
-          this.updateChatter('opened server on ' + JSON.stringify(address));
-        },
+    let client2;
+    server = TcpSocket.createServer((socket) => {
+      this.updateChatter(
+        'server connected on ' + JSON.stringify(socket.address()),
       );
 
-      server.on('error', (error) => {
-        this.updateChatter('Server error ' + error);
+      connectedSockets.push(socket);
+      socket.on('data', (data) => {
+        this.updateChatter('Server Received: ' + data);
+        socket.write('Echo server\r\n');
       });
 
-      server.on('close', () => {
-        this.updateChatter('server close');
+      socket.on('error', (error) => {
+        this.updateChatter('server client error ' + error);
       });
 
-      client = TcpSocket.createConnection(
-        {
-          port: 9803,
-          host: '192.168.2.108',
-          localAddress: '192.168.2.107',
-          reuseAddress: true,
-          localPort: 40329,
-          // interface: "wifi",
-          // tls: true
-        },
-        (address) => {
-          this.updateChatter('opened client on ' + JSON.stringify(address));
-          client.write('Hello, server! Love, Client.');
-        },
-      );
-
-      client.on('data', (data) => {
-        this.updateChatter('Client Received: ' + data);
-        // this.client.destroy(); // kill client after server's response
-        // this.server.close();
+      socket.on('close', (error) => {
+        connectedSockets.pop(socket);
+        this.updateChatter('server client closed ' + (error ? error : ''));
       });
+    }).listen(
+      {port: serverPort, host: serverHost, reuseAddress: true},
+      (address) => {
+        this.updateChatter('opened server on ' + JSON.stringify(address));
+      },
+    );
 
-      client.on('error', (error) => {
-        this.updateChatter('client error ' + error);
-      });
-
-      client.on('close', () => {
-        this.updateChatter('client close');
-      });
-
-      this.server = server;
-      this.client = client;
+    server.on('error', (error) => {
+      this.updateChatter('Server error ' + error);
     });
+
+    server.on('close', () => {
+      this.updateChatter('server close');
+    });
+
+    client = TcpSocket.createConnection(
+      {
+        port: serverPort,
+        host: serverHost,
+        localAddress: '127.0.0.1',
+        reuseAddress: true,
+        // localPort: 20000,
+        // interface: "wifi",
+        // tls: true
+      },
+      (address) => {
+        this.updateChatter('opened client on ' + JSON.stringify(address));
+        client.write('Hello, server! Love, Client.');
+      },
+    );
+
+    client.on('data', (data) => {
+      console.log(client);
+      //connectedSockets.map((elem, index) => console.log(elem));
+      this.updateChatter('Client Received: ' + data);
+      //this.client.destroy(); // kill client after server's response
+      //this.server.close();
+    });
+
+    client.on('error', (error) => {
+      this.updateChatter('client error ' + error);
+    });
+
+    client.on('close', () => {
+      this.updateChatter('client close');
+    });
+
+    client2 = TcpSocket.createConnection(
+      {
+        port: serverPort,
+        host: serverHost,
+        localAddress: '127.0.0.1',
+        reuseAddress: true,
+        // localPort: 20000,
+        // interface: "wifi",
+        // tls: true
+      },
+      (address) => {
+        this.updateChatter('opened client2 on ' + JSON.stringify(address));
+        client2.write('Hello, server! Love, client2.');
+      },
+    );
+
+    client2.on('data', (data) => {
+      this.updateChatter('client2 Received: ' + data);
+      this.client2.destroy(); // kill client2 after server's response
+      this.server.close();
+    });
+
+    client2.on('error', (error) => {
+      this.updateChatter('client2 error ' + error);
+    });
+
+    client2.on('close', () => {
+      this.updateChatter('client close');
+      connectedSockets.map((elem, index) =>
+        elem._destroyed === true ? console.log('des') : null,
+      );
+    });
+    this.server = server;
+    this.client = client;
+    this.client2 = client2;
   }
 
   componentWillUnmount() {
@@ -114,26 +134,17 @@ class App extends React.Component {
 
   render() {
     return (
-      <SafeAreaView style={{flex: 1}}>
-        <View style={styles.container}>
-          <View styles={{heigth: 100}}>
-            <Button
-              title="emit"
-              onPress={() => this.client.write('Socket emitted')}
-            />
-          </View>
-
-          <ScrollView>
-            {this.state.chatter.map((msg, index) => {
-              return (
-                <Text key={index} style={styles.welcome}>
-                  {msg}
-                </Text>
-              );
-            })}
-          </ScrollView>
-        </View>
-      </SafeAreaView>
+      <View style={styles.container}>
+        <ScrollView>
+          {this.state.chatter.map((msg, index) => {
+            return (
+              <Text key={index} style={styles.welcome}>
+                {msg}
+              </Text>
+            );
+          })}
+        </ScrollView>
+      </View>
     );
   }
 }

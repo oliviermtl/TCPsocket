@@ -1,0 +1,191 @@
+// SOCKET CREATED
+{
+  "_address": {
+    "address": "127.0.0.1",
+    "family": "IPv4",
+    "port": 41511
+  },
+  "_eventEmitter": {
+    "_subscriber": {
+      "_currentSubscription": null,
+      "_subscriptionsForType": [Object
+      ]
+    }
+  },
+  "_id": 1000,
+  "_listeners": [
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    }
+  ],
+  "_state": 2
+}
+// SOCKET DESTROYED
+{
+  "_address": {
+    "address": "127.0.0.1",
+    "family": "IPv4",
+    "port": 41511
+  },
+  "_destroyed": true,
+  "_eventEmitter": {
+    "_subscriber": {
+      "_currentSubscription": null,
+      "_subscriptionsForType": [Object
+      ]
+    }
+  },
+  "_id": 1000,
+  "_listeners": [
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    }
+  ],
+  "_state": 2
+}
+// CLIENT
+{
+  "_address": {
+    "address": "0.0.0.0",
+    "port": 9983
+  },
+  "_destroyed": false,
+  "_eventEmitter": {
+    "_subscriber": {
+      "_currentSubscription": null,
+      "_subscriptionsForType": [Object
+      ]
+    }
+  },
+  "_id": 1,
+  "_listeners": [
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": true
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    },
+    {
+      "_eventEmitter": [NativeEventEmitter
+      ],
+      "_listener": [EmitterSubscription
+      ],
+      "_removed": false
+    }
+  ],
+  "_state": 2
+}
