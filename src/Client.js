@@ -8,6 +8,7 @@ import {
   Button,
   SafeAreaView,
   TextInput,
+  FlatList,
 } from 'react-native';
 
 import TcpSocket from 'react-native-tcp-socket';
@@ -15,12 +16,13 @@ import {NetworkInfo} from 'react-native-network-info';
 
 const serverPort = 9803;
 let client = {};
-
+let dataFeed = [];
 const Client = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [name, setName] = useState('');
   const [server, setServer] = useState('');
   const [ip, setIp] = useState('');
+  const [feed, setFeed] = useState([]);
 
   function socketStart(_serverPort, _serverHost, _myIP) {
     client = TcpSocket.createConnection(
@@ -36,12 +38,13 @@ const Client = () => {
       (address) => {
         // this.updateChatter('opened client on ' + JSON.stringify(address));
         setIsConnected(true);
-        client.write(
-          `Hello server! sent from: ${_myIP} to ${JSON.stringify(address)}`,
-        );
+        client.write(`Hello server! sent from: ${_myIP} ${name}`);
       },
     );
     client.on('data', (data) => {
+      setFeed((feed) => [...feed, data.toString()]);
+      //dataFeed.push(data);
+      console.log(data);
       //this.updateChatter('Received from server: ' + data);
     });
 
@@ -53,7 +56,10 @@ const Client = () => {
     client.on('close', () => {
       setIsConnected(false);
     });
+    return client;
   }
+
+  // Set server address and client name in asyncStorage
   const multiSet = async (_server, _name) => {
     const server = ['@server', _server];
     const name = ['@name', _name];
@@ -62,9 +68,10 @@ const Client = () => {
     } catch (e) {
       console.log(e);
     }
-    console.log('Done.');
+    console.log('Data saved to asyc storage');
   };
 
+  // Retrieve server address and client name in asyncStorage
   const getMultiple = async () => {
     let values;
     try {
@@ -75,18 +82,26 @@ const Client = () => {
       // read error
     }
     console.log(values);
-
     // example console.log output:
     // [ ['@MyApp_user', 'myUserValue'], ['@MyApp_key', 'myKeyValue'] ]
   };
+
+  // Get local IP address
+  const getIp = async () => {
+    let _ip = await NetworkInfo.getIPV4Address();
+    setIp(_ip);
+    console.log(`ip:${_ip}`);
+  };
+
   useEffect(() => {
-    NetworkInfo.getIPV4Address().then((ipv4Address) => {
-      setIp(ipv4Address);
-    });
-    getMultiple();
+    getIp();
+    getMultiple().then(socketStart(serverPort, server, ip));
+    // socketStart(serverPort, server, ip);
 
     return () => {};
   }, []);
+
+  useEffect(() => {}, []);
 
   return (
     <SafeAreaView style={styles.flex}>
@@ -108,6 +123,7 @@ const Client = () => {
             placeholder={name}
           />
           <Button
+            style={styles.input}
             disabled={isConnected}
             title="Connect"
             onPress={() => {
@@ -119,6 +135,11 @@ const Client = () => {
 
         <View style={styles.flex}>
           <Text>Right</Text>
+          <FlatList
+            extraData={feed}
+            data={feed}
+            renderItem={({item}) => <Text>{item}</Text>}
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -133,7 +154,7 @@ const styles = StyleSheet.create({
   columns: {
     flexDirection: 'row',
   },
-  input: {borderColor: 'gray', borderWidth: 1, margin: 8},
+  input: {borderColor: 'gray', borderWidth: 1, margin: 8, borderRadius: 8},
 });
 
 export default Client;
