@@ -16,14 +16,14 @@ import {NetworkInfo} from 'react-native-network-info';
 
 const serverPort = 9803;
 let thisClient = {};
-let dataFeed = [];
+
 const Client = () => {
   const [isConnected, setIsConnected] = useState(false);
-  const [reconnect, setReconnect] = useState(0);
   const [name, setName] = useState('');
   const [server, setServer] = useState('');
   const [ip, setIp] = useState('');
   const [feed, setFeed] = useState([]);
+  const [connectionFeed, setConnectionFeed] = useState(0);
 
   function socketStart(_serverPort, _serverHost, _myIP) {
     let client = TcpSocket.createConnection(
@@ -39,14 +39,11 @@ const Client = () => {
       (address) => {
         // this.updateChatter('opened client on ' + JSON.stringify(address));
         setIsConnected(true);
-        client.write(`Hello server! sent from: ${_myIP} ${name}`);
+        client.write(`Hello server! sent from: ${ip} ${name}`);
       },
     );
     client.on('data', (data) => {
       setFeed((feed) => [...feed, data.toString()]);
-      //dataFeed.push(data);
-      console.log(data);
-      //this.updateChatter('Received from server: ' + data);
     });
 
     client.on('error', (error) => {
@@ -56,10 +53,12 @@ const Client = () => {
 
     client.on('close', () => {
       setFeed((feed) => [...feed, 'Close received']);
+      setConnectionFeed((connectionFeed) => connectionFeed + 1);
       setIsConnected(false);
       setFeed((feed) => [...feed, 'Start reconnect routine from on close']);
       retrySocket();
     });
+
     return client;
   }
 
@@ -75,17 +74,16 @@ const Client = () => {
     console.log('Data saved to asyc storage');
   };
 
-  // Retrieve server address and client name in asyncStorage
-  const getMultiple = async () => {
+  // Retrieve & Return server address and client name in asyncStorage
+  const getConnectionDetails = async () => {
     let values;
     try {
       values = await AsyncStorage.multiGet(['@server', '@name']);
-      setServer(values[0][1]);
-      setName(values[1][1]);
     } catch (e) {
       // read error
     }
     console.log(values);
+    return values;
     // example console.log output:
     // [ ['@MyApp_user', 'myUserValue'], ['@MyApp_key', 'myKeyValue'] ]
   };
@@ -93,31 +91,31 @@ const Client = () => {
   // Get local IP address
   const getIp = async () => {
     let _ip = await NetworkInfo.getIPV4Address();
-    setIp(_ip);
-    console.log(`ip:${_ip}`);
+    return _ip;
   };
 
   useEffect(() => {
-    getIp();
-    getMultiple();
+    getIp().then((value) => setIp(value));
+    getConnectionDetails().then((values) => {
+      setServer(values[0][1]);
+      setName(values[1][1]);
+    });
+
     return () => {};
   }, []);
 
   useEffect(() => {
-    if (server === '' || ip === '') {
-      setFeed((feed) => [...feed, 'no server or ip yet']);
-      return;
-    }
-    if (!isConnected) {
-      setFeed((feed) => [...feed, 'Start reconnect routine from useEffect']);
-    }
-  }, [isConnected]);
+    setFeed((feed) => [...feed, connectionFeed.toString()]);
+    return () => {};
+  }, [connectionFeed]);
 
   const retrySocket = () => {
     setTimeout(function () {
       if (!isConnected) {
-        setFeed((feed) => [...feed, 'Trying to reconnect']);
+        setFeed((feed) => [...feed, `Trying to reconnect ${server}`]);
         socketStart(serverPort, server, ip);
+      } else {
+        setFeed((feed) => [...feed, 'Socket is ok']);
       }
     }, 5000);
   };
@@ -144,10 +142,17 @@ const Client = () => {
           />
           <Button
             style={styles.input}
+            // disabled={isConnected}
+            title="Save"
+            onPress={() => {
+              multiSet(server, name);
+            }}
+          />
+          <Button
+            style={styles.input}
             disabled={isConnected}
             title="Connect"
             onPress={() => {
-              multiSet(server, name);
               socketStart(serverPort, server, ip);
             }}
           />
@@ -174,7 +179,13 @@ const styles = StyleSheet.create({
   columns: {
     flexDirection: 'row',
   },
-  input: {borderColor: 'gray', borderWidth: 1, margin: 8, borderRadius: 8},
+  input: {
+    borderColor: 'gray',
+    borderWidth: 1,
+    padding: 8,
+    margin: 8,
+    borderRadius: 8,
+  },
 });
 
 export default Client;
