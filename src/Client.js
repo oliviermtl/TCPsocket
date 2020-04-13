@@ -15,17 +15,18 @@ import TcpSocket from 'react-native-tcp-socket';
 import {NetworkInfo} from 'react-native-network-info';
 
 const serverPort = 9803;
-let client = {};
+let thisClient = {};
 let dataFeed = [];
 const Client = () => {
   const [isConnected, setIsConnected] = useState(false);
+  const [reconnect, setReconnect] = useState(0);
   const [name, setName] = useState('');
   const [server, setServer] = useState('');
   const [ip, setIp] = useState('');
   const [feed, setFeed] = useState([]);
 
   function socketStart(_serverPort, _serverHost, _myIP) {
-    client = TcpSocket.createConnection(
+    let client = TcpSocket.createConnection(
       {
         port: _serverPort,
         host: _serverHost,
@@ -49,12 +50,15 @@ const Client = () => {
     });
 
     client.on('error', (error) => {
-      setIsConnected(false);
-      //this.updateChatter('client error ' + error);
+      setFeed((feed) => [...feed, 'Error received']);
+      //setIsConnected(false);
     });
 
     client.on('close', () => {
+      setFeed((feed) => [...feed, 'Close received']);
       setIsConnected(false);
+      setFeed((feed) => [...feed, 'Start reconnect routine from on close']);
+      retrySocket();
     });
     return client;
   }
@@ -95,18 +99,34 @@ const Client = () => {
 
   useEffect(() => {
     getIp();
-    getMultiple().then(socketStart(serverPort, server, ip));
-    // socketStart(serverPort, server, ip);
-
+    getMultiple();
     return () => {};
   }, []);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    if (server === '' || ip === '') {
+      setFeed((feed) => [...feed, 'no server or ip yet']);
+      return;
+    }
+    if (!isConnected) {
+      setFeed((feed) => [...feed, 'Start reconnect routine from useEffect']);
+    }
+  }, [isConnected]);
+
+  const retrySocket = () => {
+    setTimeout(function () {
+      if (!isConnected) {
+        setFeed((feed) => [...feed, 'Trying to reconnect']);
+        socketStart(serverPort, server, ip);
+      }
+    }, 5000);
+  };
 
   return (
     <SafeAreaView style={styles.flex}>
       <View style={styles.columns}>
         <View style={styles.flex}>
+          <Text>Server : {server}</Text>
           <Text>IP : {ip}</Text>
           <Text>{isConnected ? 'Connection ok' : 'Not Connected'}</Text>
 
