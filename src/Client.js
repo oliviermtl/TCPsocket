@@ -48,6 +48,7 @@ const Client = () => {
 
     client.on('error', (error) => {
       setFeed((feed) => [...feed, 'Error received']);
+      client.destroy();
       //setIsConnected(false);
     });
 
@@ -56,6 +57,8 @@ const Client = () => {
       setConnectionFeed((connectionFeed) => connectionFeed + 1);
       setIsConnected(false);
       setFeed((feed) => [...feed, 'Start reconnect routine from on close']);
+      console.log(client._id);
+      client.destroy();
       retrySocket();
     });
 
@@ -117,7 +120,7 @@ const Client = () => {
       } else {
         setFeed((feed) => [...feed, 'Socket is ok']);
       }
-    }, 5000);
+    }, 10000);
   };
 
   return (
