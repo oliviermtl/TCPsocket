@@ -116,6 +116,7 @@ const Client = () => {
     setTimeout(function () {
       if (!isConnected) {
         setFeed((feed) => [...feed, `Trying to reconnect ${server}`]);
+        console.log(server, ip);
         socketStart(serverPort, server, ip);
       } else {
         setFeed((feed) => [...feed, 'Socket is ok']);
@@ -162,7 +163,14 @@ const Client = () => {
         </View>
 
         <View style={styles.flex}>
-          <Text>Right</Text>
+          <Button
+            style={styles.input}
+            title="Clean Feed"
+            onPress={() => {
+              setFeed([]);
+            }}
+          />
+
           <FlatList
             extraData={feed}
             data={feed}
