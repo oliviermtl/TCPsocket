@@ -15,7 +15,6 @@ import TcpSocket from 'react-native-tcp-socket';
 import {NetworkInfo} from 'react-native-network-info';
 
 const serverPort = 9803;
-let thisClient = {};
 
 const Client = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -39,7 +38,9 @@ const Client = () => {
       (address) => {
         // this.updateChatter('opened client on ' + JSON.stringify(address));
         setIsConnected(true);
+        let testObjectToSend = {ip, name};
         client.write(`Hello server! sent from: ${ip} ${name}`);
+        client.write(JSON.stringify(testObjectToSend));
       },
     );
     client.on('data', (data) => {
@@ -59,6 +60,7 @@ const Client = () => {
       setFeed((feed) => [...feed, 'Start reconnect routine from on close']);
       console.log(client._id);
       client.destroy();
+
       retrySocket();
     });
 
